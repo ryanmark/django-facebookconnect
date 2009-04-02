@@ -1,3 +1,6 @@
+Copyright 2009 Ryan Mark
+
+
 =Intro=
 django-facebookconnect extends the builtin django auth system to let your visitors use thier facebook account to log into your site. It works with existing user accounts and django-registration (although django-registration isn't required). Your visitors can still use their django username and password, or they can log in with their facebook account and link it to their existing django user account. If they don't have an existing user account, they can login with facebook and a dummy django Uuser will get setup for them seamlessly.
 

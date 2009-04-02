@@ -1,4 +1,4 @@
-# Copyright 2008 Brian Boyer, Ryan Mark, Angela Nitzke, Joshua Pollock,
+# Copyright 2008-2009 Brian Boyer, Ryan Mark, Angela Nitzke, Joshua Pollock,
 # Stuart Tiffen, Kayla Webley and the Medill School of Journalism, Northwestern
 # University.
 #
