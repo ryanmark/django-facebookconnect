@@ -1,0 +1,37 @@
+<script src="http://static.ak.connect.facebook.com/js/api_lib/v0.4/FeatureLoader.js.php" type="text/javascript"></script>
+<script type="text/javascript">
+    FB_RequireFeatures(["XFBML"], function() {FB.Facebook.init("{{ facebook_api_key }}", "{{ url facebook_xd_receiver }}")});
+
+    function facebookConnect(loginForm) {
+        FB.Connect.requireSession();
+        FB.Facebook.get_sessionState().waitUntilReady(function(){loginForm.submit();});
+    }
+
+    function pushToFacebookFeed(data){
+        if(data['success']){
+            var template_data = data['template_data'];
+            var template_bundle_id = data['template_bundle_id'];
+            feedTheFacebook(template_data,template_bundle_id,function(){window.location.href=template_data['url'];});
+        } else {
+            alert(data['errors']);
+        }
+    }
+    function pushToFacebookFeedAndReload(data){
+        if(data['success']){
+            var template_data = data['template_data'];
+            var template_bundle_id = data['template_bundle_id'];
+            feedTheFacebook(template_data,template_bundle_id,function(){window.location.reload();});
+        } else {
+            alert(data['errors']);
+        }
+    }
+    function feedTheFacebook(template_data,template_bundle_id,callback) {
+        FB.Connect.showFeedDialog(
+            template_bundle_id,
+            template_data,
+            null, null, null,
+            FB.RequireConnect.promptConnect,
+            callback
+        );
+    }
+</script>

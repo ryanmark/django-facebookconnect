@@ -1,0 +1,11 @@
+
+<a href="{{ profile_url }}"><img src="{{ picture_url }}" alt="{{ full_name }}"/></a>
+<br/>
+<a href="{{ profile_url }}">{{ full_name }}</a><br/>
+{% if networks %}
+<div class="networks"><strong>Networks:</strong><ul>
+{% for net in networks %}
+  <li>{{ net.name }}</li>
+{% endfor %}
+</ul></div>
+{% endif %}
