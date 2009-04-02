@@ -33,7 +33,7 @@ urlpatterns = patterns('',
         name="facebook_setup"),
     url(r'^xd_receiver.htm$',
         direct_to_template,
-        {'template': 'facebook/xd_reciever.htm'},
+        {'template': 'facebook/xd_receiver.htm'},
         name="facebook_xd_receiver"),
 )
 
