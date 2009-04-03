@@ -31,12 +31,17 @@ from facebookconnect.models import FacebookProfile
 
 def facebook_login(request):
     if request.method == "POST":
-        next = request.POST['next']
+        logging.debug("OK logging in...")
+        if request.POST.get('next',False):
+            next = request.POST['next']
+        else:
+            next = request.META["HTTP_REFERER"]
         user = authenticate(request=request)
         if user is not None:
             if user.is_active:
                 login(request, user)
                 # Redirect to a success page.
+                logging.debug("Redirecting to %s" % next)
                 return HttpResponseRedirect(next)
             else:
                 raise FacebookAuthError('This account is disabled.')
@@ -46,19 +51,17 @@ def facebook_login(request):
         else:
             raise FacebookAuthError('Invalid login.')
     else:
-        #login_required decorator sent us here
-        return render_to_response(
-            'accounts/login.html',
-            {'hide_primary_login': True,},
-            context_instance=RequestContext(request),
-        )
+        logging.debug("Got redirected here")
+        url = reverse('auth_login')
+        if request.GET.get('next',False):
+            url += "?next=%s" % request.GET['next']
+        return HttpResponseRedirect(url)
 
 def facebook_logout(request):
     logout(request)
     request.facebook.session_key = None
     request.facebook.uid = None
-    return HttpResponse('Logged out!')
-    #return HttpResponseRedirect('/')
+    return HttpResponseRedirect(request.META["HTTP_REFERER"])
     
 def setup(request):
     if not request.facebook.uid:

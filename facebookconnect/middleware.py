@@ -55,13 +55,6 @@ class FacebookConnectMiddleware(object):
             warnings.warn(u'FBC Middleware failed: %s' % ex)
             logging.exception('FBC Middleware: something went terribly wrong')
     
-    """
-    def process_view(self, request, view_func, *view_args, **view_kwargs):
-        try:
-            if int(request.facebook.uid) and not request.user.is_authenticated():
-                pass
-    """         
-    
     def process_exception(self,request,exception):
         my_ex = exception
         if type(exception) == TemplateSyntaxError:

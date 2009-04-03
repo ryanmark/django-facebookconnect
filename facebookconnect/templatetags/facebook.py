@@ -19,6 +19,7 @@
 
 from django import template
 from django.conf import settings
+from django.core.urlresolvers import reverse
 from facebookconnect.models import FacebookTemplate,FacebookProfile
 
 register = template.Library()
@@ -114,3 +115,8 @@ def show_connect_button(context,javascript_friendly=False):
     else:
         next = ''
     return {'next':next,'javascript_friendly':javascript_friendly}
+
+@register.simple_tag
+def show_logout():
+    o = reverse('facebook_logout')
+    return '<a href="%s" onclick="FB.Connect.logoutAndRedirect(\'%s\');return false;">logout</a>' % (o,o) #hoot!
