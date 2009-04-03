@@ -65,10 +65,10 @@ Setup a facebook applicaiton here: http://upload.facebook.com . You'll need to h
 {{{
 FACEBOOK_API_KEY = '00000000000000000000000000000000'
 FACEBOOK_SECRET_KEY = '00000000000000000000000000000000'
-FACEBOOK_INTERNAL = False
+FACEBOOK_INTERNAL = True
 }}}
 
-The third setting is for pyfacebook. I really don't know what it does. Maybe you don't need it. Maybe you do.
+The third setting is for pyfacebook. I don't know what it does completely. But it does cause pyfacebook to hold on to expired facebook sessions when it's False.
 
 ===caching===
 So you have to use caching with facebook connect. Especially if you plan to display profile info from your facebook connect users. Caching is being used no matter what, but if you don't configure it, django will just cache to memory for the execution and not for the long term. Or something. Its probably bad.
