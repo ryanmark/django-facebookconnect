@@ -48,14 +48,12 @@ def facebook_login(request):
         elif request.facebook.uid:
             #we have to set this user up
             return HttpResponseRedirect(reverse('facebook_setup')+"?next=%s" % next)
-        else:
-            raise FacebookAuthError('Invalid login.')
-    else:
-        logging.debug("Got redirected here")
-        url = reverse('auth_login')
-        if request.GET.get('next',False):
-            url += "?next=%s" % request.GET['next']
-        return HttpResponseRedirect(url)
+    
+    logging.debug("Got redirected here")
+    url = reverse('auth_login')
+    if request.GET.get('next',False):
+        url += "?next=%s" % request.GET['next']
+    return HttpResponseRedirect(url)
 
 def facebook_logout(request):
     logout(request)

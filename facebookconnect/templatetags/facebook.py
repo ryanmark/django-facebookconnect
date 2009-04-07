@@ -117,6 +117,10 @@ def show_connect_button(context,javascript_friendly=False):
     return {'next':next,'javascript_friendly':javascript_friendly}
 
 @register.simple_tag
+def facebook_js():
+    return '<script src="http://static.ak.connect.facebook.com/js/api_lib/v0.4/FeatureLoader.js.php" type="text/javascript"></script>'
+
+@register.simple_tag
 def show_logout():
     o = reverse('facebook_logout')
     return '<a href="%s" onclick="FB.Connect.logoutAndRedirect(\'%s\');return false;">logout</a>' % (o,o) #hoot!
