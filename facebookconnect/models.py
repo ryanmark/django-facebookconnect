@@ -29,17 +29,6 @@ from facebook.djangofb import Facebook,get_facebook_client
 from facebook import FacebookError
 from urllib2 import URLError
 
-FACEBOOK_FIELDS = ['uid,name,first_name,pic_square_with_logo,affiliations,status,proxied_email']
-DEFAULT_DUMMY_FACEBOOK_INFO = {
-    'uid':0,
-    'name':'(Private)',
-    'first_name':'(Private)',
-    'pic_square_with_logo':'/public/images/t_silhouette.jpg',
-    'affiliations':None,
-    'status':None,
-    'proxied_email':None,
-}
-
 class FacebookBackend:
     def authenticate(self, request=None):
         fb = get_facebook_client()
@@ -85,13 +74,32 @@ class FacebookProfile(models.Model):
     facebook_id = models.IntegerField(unique=True)
     
     __facebook_info = None
+
+    FACEBOOK_FIELDS = ['uid,name,first_name,pic_square_with_logo,affiliations,status,proxied_email']
+    DUMMY_FACEBOOK_INFO = {
+        'uid':0,
+        'name':'(Private)',
+        'first_name':'(Private)',
+        'pic_square_with_logo':'/public/images/t_silhouette.jpg',
+        'affiliations':None,
+        'status':None,
+        'proxied_email':None,
+    }
     
+    def __init__(self, *args, **kwargs):
+        """reset local DUMMY info"""
+        super(FacebookProfile,self).__init__(*args,**kwargs)
+        try:
+            self.DUMMY_FACEBOOK_INFO = getattr(settings,"DUMMY_FACEBOOK_INFO")
+        except AttributeError:
+            pass
+
     def __get_picture_url(self):
         self.__configure_me()
         if self.__facebook_info['pic_square_with_logo']:
             return self.__facebook_info['pic_square_with_logo']
         else:
-            return getattr(settings,"DUMMY_FACEBOOK_INFO",DEFAULT_DUMMY_FACEBOOK_INFO)['pic_square_with_logo']
+            return self.DUMMY_FACEBOOK_INFO['pic_square_with_logo']
     picture_url = property(__get_picture_url)
 
     def __get_profile_url(self):
@@ -103,7 +111,7 @@ class FacebookProfile(models.Model):
         if self.__facebook_info['name']:
             return u"%s" % self.__facebook_info['name']
         else:
-            return getattr(settings,"DUMMY_FACEBOOK_INFO",DEFAULT_DUMMY_FACEBOOK_INFO)['name']
+            return self.DUMMY_FACEBOOK_INFO['name']
     full_name = property(__get_full_name)
     
     def __get_first_name(self):
@@ -111,7 +119,7 @@ class FacebookProfile(models.Model):
         if self.__facebook_info['first_name']:
             return u"%s" % self.__facebook_info['first_name']
         else:
-            return getattr(settings,"DUMMY_FACEBOOK_INFO",DEFAULT_DUMMY_FACEBOOK_INFO)['first_name']
+            return self.DUMMY_FACEBOOK_INFO['first_name']
     first_name = property(__get_first_name)
     
     def __get_networks(self):
@@ -157,10 +165,19 @@ class FacebookProfile(models.Model):
             
     def facebook_only(self):
         """return true if this user uses facebook and only facebook"""
-        if self.facebook_id and self.facebook_id == self.user.username:
+        if self.facebook_id and str(self.facebook_id) == self.user.username:
             return True
         else:
             return False
+    
+    def is_authenticated(self):
+        """Check if this fb user is logged in"""
+        _facebook_obj = get_facebook_client()
+        if int(self.facebook_id) == int(_facebook_obj.uid):
+            return True
+        else:
+            return False
+    
 
     def __get_facebook_friends(self):
         _facebook_obj = get_facebook_client()
@@ -187,7 +204,7 @@ class FacebookProfile(models.Model):
         ids_to_get = []
         for id in fbids:
             if id is 0:
-                ret.append(getattr(settings,"DUMMY_FACEBOOK_INFO",DEFAULT_DUMMY_FACEBOOK_INFO))
+                ret.append(self.DUMMY_FACEBOOK_INFO)
             
             if _facebook_obj.uid is None:
                 cache_key = 'fb_user_info_%s' % id
@@ -206,7 +223,7 @@ class FacebookProfile(models.Model):
             elif getattr(settings,'RANDOM_FACEBOOK_FAIL',False) and random.randint(1,10) is 3:
                 raise URLError(104)
             logging.debug("Calling Facebook for '%s'" % ids_to_get)
-            tmp_info = _facebook_obj.users.getInfo(ids_to_get, FACEBOOK_FIELDS)
+            tmp_info = _facebook_obj.users.getInfo(ids_to_get, self.FACEBOOK_FIELDS)
             
             ret.extend(tmp_info)
             for info in tmp_info:
@@ -222,16 +239,16 @@ class FacebookProfile(models.Model):
     def __configure_me(self):
         try:
             logging.debug("FBID: '%s' profile: '%s' user: '%s'" % (self.facebook_id,self.id,self.user_id))
-            if self.__facebook_info == getattr(settings,"DUMMY_FACEBOOK_INFO",DEFAULT_DUMMY_FACEBOOK_INFO) or not self.__facebook_info:
+            if self.__facebook_info == self.DUMMY_FACEBOOK_INFO or not self.__facebook_info:
                 self.__facebook_info = self.__get_facebook_info([self.facebook_id])[0]
         except (ImproperlyConfigured), ex:
             logging.error('Facebook not setup')
         except (FacebookError,URLError), ex:
             logging.error('Facebook Fail loading profile: %s' % ex)
-            self.__facebook_info = getattr(settings,"DUMMY_FACEBOOK_INFO",DEFAULT_DUMMY_FACEBOOK_INFO)
+            self.__facebook_info = self.DUMMY_FACEBOOK_INFO
         except (IndexError), ex:
             logging.error("Couldn't retrieve FB info for FBID: '%s' profile: '%s' user: '%s'" % (self.facebook_id,self.id,self.user_id))
-            self.__facebook_info = getattr(settings,"DUMMY_FACEBOOK_INFO",DEFAULT_DUMMY_FACEBOOK_INFO)
+            self.__facebook_info = self.DUMMY_FACEBOOK_INFO
 
     def get_absolute_url(self):
         return self.__get_profile_url()

@@ -21,7 +21,7 @@ import logging
 import warnings
 from datetime import datetime
 from django.core.urlresolvers import reverse
-from django.contrib.auth import logout
+from django.contrib.auth import logout,login
 from django.conf import settings
 from facebook import Facebook,FacebookError
 from django.template import TemplateSyntaxError
@@ -34,19 +34,27 @@ class FacebookConnectMiddleware(object):
     def process_request(self,request):
         """process incoming request"""
         try:
+            # this is true if anyone has ever used the browser to log in to facebook with an acount
+            # that has accepted this application. useless.
             bona_fide = request.facebook.check_session(request)
+            logging.debug("FBC Middleware: UID in request: %s" % request.facebook.uid)
+            
+            logging.debug("FBC Middleware: Bona Fide: %s, Logged in: %s, Session: %s" % (bona_fide,request.facebook.uid,request.facebook.session_key))
+            
+            # make sure a users django auth and facebook auth are in sync, if they are 
+            # a facebook only user
             if (request.user.is_authenticated() 
                     and request.user.facebook_profile 
                     and request.user.facebook_profile.facebook_only()):
                 cur_user = request.facebook.users.getLoggedInUser()
-                logging.debug("Bona Fide: %s Logged in: %s FB Obj: %s" % (bona_fide,cur_user,request.facebook.uid))
                 if not bona_fide or int(cur_user) != int(request.facebook.uid):
-                    logging.debug("DIE DIE DIE")
+                    logging.debug("FBC Middleware: DIE DIE DIE")
                     logout(request)
                     request.facebook.session_key = None
                     request.facebook.uid = None
+
         except FacebookProfile.DoesNotExist,ex:
-            logging.debug(u"User doesn't have facebook!")
+            logging.debug(u"FBC Middleware: User doesn't have facebook or needs to finish setup!")
         except Exception, ex:
             #Because this is a middleware, we can't assume the errors will be caught elsewhere.
             logout(request)
@@ -66,10 +74,10 @@ class FacebookConnectMiddleware(object):
                 logout(request)
                 request.facebook.session_key = None
                 request.facebook.uid = None
-                logging.error('FBC Middleware: 102, session')
+                logging.error('FBC middleware: 102, session')
                 return HttpResponseRedirect(reverse('authentication.views.facebook_login'))
         elif type(my_ex) == URLError:
             if my_ex.reason is 104:
-                logging.error('FBC Middleware: 104, connection reset?')
+                logging.error('FBC middleware: 104, connection reset?')
             elif my_ex.reason is 102:
-                logging.error('FBC Middleware: 102, name or service not known')
+                logging.error('FBC middleware: 102, name or service not known')

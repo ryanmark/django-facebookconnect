@@ -27,29 +27,33 @@ from django.shortcuts import render_to_response
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
+from django.conf import settings
+
 from facebookconnect.models import FacebookProfile
 
 def facebook_login(request):
     if request.method == "POST":
-        logging.debug("OK logging in...")
-        if request.POST.get('next',False):
+        logging.debug("FBC: OK logging in...")
+        if request.POST.get('next',False) and request.POST['next']:
             next = request.POST['next']
         else:
-            next = request.META["HTTP_REFERER"]
+            next = getattr(settings,'LOGIN_REDIRECT_URL','/')
         user = authenticate(request=request)
         if user is not None:
             if user.is_active:
                 login(request, user)
                 # Redirect to a success page.
-                logging.debug("Redirecting to %s" % next)
+                logging.debug("FBC: Redirecting to %s" % next)
                 return HttpResponseRedirect(next)
             else:
+                logging.debug("FBC: This account is disabled.")
                 raise FacebookAuthError('This account is disabled.')
         elif request.facebook.uid:
             #we have to set this user up
+            logging.debug("FBC: Redirecting to setup")
             return HttpResponseRedirect(reverse('facebook_setup')+"?next=%s" % next)
     
-    logging.debug("Got redirected here")
+    logging.debug("FBC: Got redirected here")
     url = reverse('auth_login')
     if request.GET.get('next',False):
         url += "?next=%s" % request.GET['next']
@@ -66,7 +70,11 @@ def setup(request):
         return HttpResponseRedirect(reverse('auth_login')+"?next="+request.GET.get('next',''))
     
     if request.method == "POST":
-        next = request.POST.get('next','')
+        if request.POST.get('next',False) and request.POST['next']:
+            next = request.POST['next']
+        else:
+            next = getattr(settings,'LOGIN_REDIRECT_URL','/')
+            
         profile = FacebookProfile(facebook_id=request.facebook.uid)
         
         if request.POST.get('facebook_only',False):
@@ -76,7 +84,7 @@ def setup(request):
             user.save()
             profile.user = user
             profile.save()
-            logging.info("Added user and profile for %s!" % request.facebook.uid)
+            logging.info("FBC: Added user and profile for %s!" % request.facebook.uid)
             user = authenticate(request=request)
             login(request, user)
             return HttpResponseRedirect(next)
@@ -85,11 +93,11 @@ def setup(request):
 
         if form.is_valid():
             user = form.get_user()
-            logging.debug("Trying to setup FB: %s, %s" % (user,profile))
+            logging.debug("FBC: Trying to setup FB: %s, %s" % (user,profile))
             if user is not None and user.is_active:
                 profile.user = user
                 profile.save()
-                logging.info("Attached facebook profile %s to user %s!" % (profile.facebook_id,user))
+                logging.info("FBC: Attached facebook profile %s to user %s!" % (profile.facebook_id,user))
                 login(request, user)
                 return HttpResponseRedirect(next)
         else:
@@ -100,7 +108,7 @@ def setup(request):
         profile = FacebookProfile(facebook_id=request.facebook.uid)
         profile.user = request.user
         profile.save()
-        logging.info("Attached facebook profile %s to user %s!" % (profile.facebook_id,user))
+        logging.info("FBC: Attached facebook profile %s to user %s!" % (profile.facebook_id,user))
         return HttpResponseRedirect(next)
     
     else:
