@@ -5,8 +5,16 @@
         FB.Connect.requireSession();
         FB.Facebook.get_sessionState().waitUntilReady(function(){loginForm.submit();});
     }
-
     function pushToFacebookFeed(data){
+        if(data['success']){
+            var template_data = data['template_data'];
+            var template_bundle_id = data['template_bundle_id'];
+            feedTheFacebook(template_data,template_bundle_id,function(){});
+        } else {
+            alert(data['errors']);
+        }
+    }
+    function pushToFacebookFeedAndRedirect(data){
         if(data['success']){
             var template_data = data['template_data'];
             var template_bundle_id = data['template_bundle_id'];

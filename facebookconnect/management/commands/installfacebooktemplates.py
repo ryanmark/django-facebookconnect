@@ -21,7 +21,7 @@ from django.conf import settings
 from django.core.management import BaseCommand
 from django.core.exceptions import ImproperlyConfigured
 from facebook import Facebook
-from authentication.models import FacebookTemplate
+from facebookconnect.models import FacebookTemplate
 from facebook_templates import FACEBOOK_TEMPLATES
 
 class Command(BaseCommand):
