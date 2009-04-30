@@ -22,7 +22,6 @@ from django.core.management import BaseCommand
 from django.core.exceptions import ImproperlyConfigured
 from facebook import Facebook
 from facebookconnect.models import FacebookTemplate
-from facebook_templates import FACEBOOK_TEMPLATES
 
 class Command(BaseCommand):
     def handle(self,*args,**options):
@@ -36,7 +35,7 @@ class Command(BaseCommand):
             facebook_obj.feed.deactivateTemplateBundleByID(t['template_bundle_id'])
         
         #install templates from our facebook settings file
-        for bundle in FACEBOOK_TEMPLATES:
+        for bundle in settings.FACEBOOK_TEMPLATES:
             name = bundle[0]
             one_line_template = bundle[1][0]
             short_template = bundle[1][1]
