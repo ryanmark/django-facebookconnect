@@ -1,0 +1,3 @@
+<fb:name uid="{{ inviter }}" firstnameonly="false" shownetwork="true"/>
+    wants to invite you to join {{ site.name }}.
+    <fb:req-choice url="{{ url }}" label="Join {{ site.name }}!"/>

@@ -20,6 +20,10 @@
 from django import template
 from django.conf import settings
 from django.core.urlresolvers import reverse
+from django.template.loader import render_to_string
+from django.contrib.sites.models import Site
+
+from facebook.djangofb import get_facebook_client
 from facebookconnect.models import FacebookTemplate,FacebookProfile
 
 register = template.Library()
@@ -124,3 +128,40 @@ def facebook_js():
 def show_logout():
     o = reverse('facebook_logout')
     return '<a href="%s" onclick="FB.Connect.logoutAndRedirect(\'%s\');return false;">logout</a>' % (o,o) #hoot!
+
+@register.filter()
+def js_string(value):
+    import re
+    return re.sub(r'[\r\n]+','',value)
+
+@register.inclusion_tag('facebook/invite.html')
+def show_invite_link(invitation_template="facebook/invitation.fbml",show_link=True):
+    """display an invite friends link"""
+    fb = get_facebook_client()
+    current_site = Site.objects.get_current()
+    
+    content = render_to_string(invitation_template,
+                               { 'inviter': fb.uid,
+                                 'url': fb.get_add_url(),
+                                 'site': current_site })
+    
+    from cgi import escape 
+    content = escape(content, True) 
+
+    facebook_uid = fb.uid
+    fql = "SELECT uid FROM user WHERE uid IN (SELECT uid2 FROM friend WHERE uid1='%s') AND has_added_app = 1" % fb.uid
+    result = fb.fql.query(fql)
+    # Extract the user ID's returned in the FQL request into a new array.
+    if result and isinstance(result, list):
+        friends_list = map(lambda x: str(x['uid']), result)
+    else: friends_list = []
+    # Convert the array of friends into a comma-delimeted string.
+    exclude_ids = ','.join(friends_list) 
+    
+    return {
+        'exclude_ids':exclude_ids,
+        'content':content,
+        'action_url':'',
+        'site':current_site,
+        'show_link':show_link,
+    }

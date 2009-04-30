@@ -20,14 +20,17 @@
 import datetime
 import logging
 import sha, random
+from urllib2 import URLError
+
+from facebook.djangofb import Facebook,get_facebook_client
+from facebook import FacebookError
+
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.core.exceptions import ImproperlyConfigured
-from facebook.djangofb import Facebook,get_facebook_client
-from facebook import FacebookError
-from urllib2 import URLError
+from django.db.models.signals import post_delete
 
 class FacebookBackend:
     def authenticate(self, request=None):
@@ -255,3 +258,10 @@ class FacebookProfile(models.Model):
 
     def __unicode__(self):
         return "FacebookProfile for %s" % self.facebook_id
+
+def unregister_fb_profile(sender, **kwargs):
+    """call facebook and let them know to unregister the user"""
+    fb = get_facebook_client()
+    fb.connect.unregisterUser([fb.hash_email(kwargs['instance'].user.email)])
+
+#post_delete.connect(unregister_fb_profile,sender=FacebookProfile)
