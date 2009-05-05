@@ -176,8 +176,19 @@ class FacebookProfile(models.Model):
     def is_authenticated(self):
         """Check if this fb user is logged in"""
         _facebook_obj = get_facebook_client()
-        if int(self.facebook_id) == int(_facebook_obj.uid):
-            return True
+        if _facebook_obj.session_key and _facebook_obj.uid:
+            try:
+                fbid = _facebook_obj.users.getLoggedInUser()
+                if int(self.facebook_id) == int(fbid):
+                    return True
+                else:
+                    return False
+            except FacebookError,ex:
+                if ex.code == 102:
+                    return False
+                else:
+                    raise
+                    
         else:
             return False
     
