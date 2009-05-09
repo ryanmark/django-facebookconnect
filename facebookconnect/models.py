@@ -154,8 +154,8 @@ class FacebookProfile(models.Model):
         try:
             friends_ids = self.__get_facebook_friends()
         except (FacebookError,URLError), ex:
-            logging.error("Facebook Fail getting friends: %s" % ex)
-        logging.debug("Friends of %s %s" % (self.facebook_id,friends_ids))
+            logging.error("FBC: fail getting friends: %s" % ex)
+        logging.debug("FBC: Friends of %s %s" % (self.facebook_id,friends_ids))
         if len(friends_ids) > 0:
             #this will cache all the friends in one api call
             self.__get_facebook_info(friends_ids)
@@ -163,7 +163,7 @@ class FacebookProfile(models.Model):
             try:
                 friends.append(FacebookProfile.objects.get(facebook_id=id))
             except (User.DoesNotExist, FacebookProfile.DoesNotExist):
-                logging.error("Can't find friend profile %s" % id)
+                logging.error("FBC: Can't find friend profile %s" % id)
         return friends
             
     def facebook_only(self):
@@ -188,7 +188,7 @@ class FacebookProfile(models.Model):
                     return False
                 else:
                     raise
-                    
+
         else:
             return False
     
@@ -206,7 +206,7 @@ class FacebookProfile(models.Model):
                 raise FacebookError(102,"RANDOM FACEBOOK FAIL!!!",[])
             elif getattr(settings,'RANDOM_FACEBOOK_FAIL',False) and random.randint(1,10) is 3:
                 raise URLError(104)
-            logging.debug("Calling Facebook for '%s'" % cache_key)
+            logging.debug("FBC: Calling for '%s'" % cache_key)
             friends = _facebook_obj.friends.getAppUsers()
             cache.set(cache_key,friends,getattr(settings,'FACEBOOK_CACHE_TIMEOUT',1800))
         
@@ -236,7 +236,7 @@ class FacebookProfile(models.Model):
                 raise FacebookError(102,"RANDOM FACEBOOK FAIL!!!",[])
             elif getattr(settings,'RANDOM_FACEBOOK_FAIL',False) and random.randint(1,10) is 3:
                 raise URLError(104)
-            logging.debug("Calling Facebook for '%s'" % ids_to_get)
+            logging.debug("FBC: Calling for '%s'" % ids_to_get)
             tmp_info = _facebook_obj.users.getInfo(ids_to_get, self.FACEBOOK_FIELDS)
             
             ret.extend(tmp_info)
@@ -256,12 +256,12 @@ class FacebookProfile(models.Model):
             if self.__facebook_info == self.DUMMY_FACEBOOK_INFO or not self.__facebook_info:
                 self.__facebook_info = self.__get_facebook_info([self.facebook_id])[0]
         except (ImproperlyConfigured), ex:
-            logging.error('Facebook not setup')
+            logging.error('FBC: Facebook not setup')
         except (FacebookError,URLError), ex:
-            logging.error('Facebook Fail loading profile: %s' % ex)
+            logging.error('FBC: Fail loading profile: %s' % ex)
             self.__facebook_info = self.DUMMY_FACEBOOK_INFO
         except (IndexError), ex:
-            logging.error("Couldn't retrieve FB info for FBID: '%s' profile: '%s' user: '%s'" % (self.facebook_id,self.id,self.user_id))
+            logging.error("FBC: Couldn't retrieve FB info for FBID: '%s' profile: '%s' user: '%s'" % (self.facebook_id,self.id,self.user_id))
             self.__facebook_info = self.DUMMY_FACEBOOK_INFO
 
     def get_absolute_url(self):
