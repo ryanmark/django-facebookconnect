@@ -1,0 +1,7 @@
+include AUTHORS
+include COPYING
+include README
+include MANIFEST.in
+include settings.EXAMPLE.py
+include setup.py
+recursive-include facebookconnect *.py *.html *.fbml *.htm
