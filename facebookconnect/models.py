@@ -257,6 +257,7 @@ class FacebookProfile(models.Model):
                 self.__facebook_info = self.__get_facebook_info([self.facebook_id])[0]
         except (ImproperlyConfigured), ex:
             logging.error('FBC: Facebook not setup')
+            self.__facebook_info = self.DUMMY_FACEBOOK_INFO
         except (FacebookError,URLError), ex:
             logging.error('FBC: Fail loading profile: %s' % ex)
             self.__facebook_info = self.DUMMY_FACEBOOK_INFO
