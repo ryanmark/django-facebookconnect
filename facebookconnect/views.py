@@ -64,7 +64,7 @@ def facebook_logout(request):
     if getattr(request,'facebook',False):
         request.facebook.session_key = None
         request.facebook.uid = None
-    return HttpResponseRedirect(getattr(settings,'LOGOUT_REDIRECT_URL',request.META["HTTP_REFERER"]))
+    return HttpResponseRedirect(getattr(settings,'LOGOUT_REDIRECT_URL','/'))
     
 def setup(request):
     if not request.facebook.uid:
