@@ -59,6 +59,8 @@ DUMMY_FACEBOOK_INFO = {
 }
 }}}
 
+There is an issue with the builtin django User model handling the facebook proxy email addresses. The User model uses the default 75 char length for the email field and facebook proxy email addresses are super long. You might want to patch your User model to increase the limit to something like 200 chars. Or you can just use the email field on the facebook_profile object that hangs off the user object.
+
 ===facebook API===
 Setup a facebook applicaiton here: http://upload.facebook.com . You'll need to have a personal facebook account to set this up. Once you add a facebook app, go to the connect section of the setup and provide the url for your facebook connect site (developers can enter localhost). Once you save the settings, you get an API key and secret. In your django settings file enter this stuff:
 
