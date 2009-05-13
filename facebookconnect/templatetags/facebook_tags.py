@@ -110,12 +110,8 @@ def show_profile_mosaic(profiles):
 
 @register.inclusion_tag('facebook/connect_button.html',takes_context=True)
 def show_connect_button(context,javascript_friendly=False):
-    if 'request' in context:
-        req = context['request']
-        if req.method == "POST":
-            next = req.POST.get('next',req.path)
-        else:
-            next = req.GET.get('next',req.path)
+    if 'next' in context:
+        next = context['next']
     else:
         next = ''
     return {'next':next,'javascript_friendly':javascript_friendly}
