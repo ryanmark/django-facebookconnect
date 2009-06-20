@@ -44,6 +44,9 @@ class FacebookBackend:
             except FacebookProfile.DoesNotExist:
                 logging.debug("FB account hasn't been used before...")
                 return None
+            except User.DoesNotExist:
+                logging.error("FB account exists without an account.")
+                return None
         else:
             logging.debug("Invalid Facebook login for %s" % fb.__dict__)
             return None
