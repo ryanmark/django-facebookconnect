@@ -109,7 +109,7 @@ def setup(request):
         profile = FacebookProfile(facebook_id=request.facebook.uid)
         profile.user = request.user
         profile.save()
-        logging.info("FBC: Attached facebook profile %s to user %s!" % (profile.facebook_id,user))
+        logging.info("FBC: Attached facebook profile %s to user %s!" % (profile.facebook_id,profile.user.id))
         return HttpResponseRedirect(next)
     
     else:
