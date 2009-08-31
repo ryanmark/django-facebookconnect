@@ -77,7 +77,7 @@ class FacebookTemplate(models.Model):
 
 class FacebookProfile(models.Model):
     user = models.OneToOneField(User,related_name="facebook_profile")
-    facebook_id = models.IntegerField(unique=True)
+    facebook_id = models.BigIntegerField(unique=True)
     
     __facebook_info = None
 
@@ -86,7 +86,7 @@ class FacebookProfile(models.Model):
         'uid':0,
         'name':'(Private)',
         'first_name':'(Private)',
-        'pic_square_with_logo':'/public/images/t_silhouette.jpg',
+        'pic_square_with_logo':'http://www.facebook.com/pics/t_silhouette.gif',
         'affiliations':None,
         'status':None,
         'proxied_email':None,
