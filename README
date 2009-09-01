@@ -92,12 +92,18 @@ There is a template tag library called facebook which has a bunch of shortcuts f
 {% load facebook_tags %}
 }}}
 
-at the top and
+at the very top, immediately after any {% extends %} statement. Put
+
+{{{
+{% facebook_js %}
+}}}
+
+in the html head section and put
  
 {{{
 {% initialize_facebook_connect %}
 }}} 
-at the bottom of your base.html file. It will install the facebook javascript and contains some javascript functions for publishing data to a facebook feed. Put 
+at the bottom of your base.html file before the closing body tag. It will install the facebook javascript and contains some javascript functions for publishing data to a facebook feed. Put 
 {{{
 {% show_connect_button %}
 }}} 
