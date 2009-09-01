@@ -40,7 +40,7 @@ Add the facebook to your authentication backends. If you dont have an AUTHENTICA
 
 {{{
 AUTHENTICATION_BACKENDS = (
-    'listr.facebookconnect.models.FacebookBackend',
+    'facebookconnect.models.FacebookBackend',
     'django.contrib.auth.backends.ModelBackend',
 )
 }}}
@@ -59,8 +59,6 @@ DUMMY_FACEBOOK_INFO = {
 }
 }}}
 
-There is an issue with the builtin django User model handling the facebook proxy email addresses. The User model uses the default 75 char length for the email field and facebook proxy email addresses are super long. You might want to patch your User model to increase the limit to something like 200 chars. Or you can just use the email field on the facebook_profile object that hangs off the user object.
-
 ===facebook API===
 Setup a facebook applicaiton here: http://upload.facebook.com . You'll need to have a personal facebook account to set this up. Once you add a facebook app, go to the connect section of the setup and provide the url for your facebook connect site (developers can enter localhost). Once you save the settings, you get an API key and secret. In your django settings file enter this stuff:
 
@@ -73,7 +71,7 @@ FACEBOOK_INTERNAL = True
 The third setting is for pyfacebook. I don't know what it does completely. But it does cause pyfacebook to hold on to expired facebook sessions when it's False.
 
 ===caching===
-So you have to use caching with facebook connect. Especially if you plan to display profile info from your facebook connect users. Caching is being used no matter what, but if you don't configure it, django will just cache to memory for the execution and not for the long term. Or something. Its probably bad.
+So you have to use caching with facebook connect. Especially if you plan to display profile info from your facebook connect users. Caching is used no matter what, but if you don't configure it, django will just cache to memory for the execution and not for the long term. Or something. Its probably bad.
 
 So read this http://docs.djangoproject.com/en/dev/topics/cache/ and setup database caching or memcached. There is one more setting directive you might be interested in:
 
@@ -83,6 +81,29 @@ FACEBOOK_CACHE_TIMEOUT = 1800
 }}}
 
 Django's cache framework rocks by the way.
+
+==Using facebook connect==
+Once you've got everything installed, all user objects will magically have a 'facebook_profile' object hanging off them. That is if the user has logged in with facebook. The FacebookProfile object has all sorts of nifty methods and properties.
+
+There are templates that you can override. The setup screen is presented to a new facebook user when they first log in. A user can then choose to link their facebook account to an existing account or not.
+
+There is a template tag library called facebook which has a bunch of shortcuts for displaying facebook profile information for a user. Put
+{{{
+{% load facebook_tags %}
+}}}
+
+at the top and
+ 
+{{{
+{% initialize_facebook_connect %}
+}}} 
+at the bottom of your base.html file. It will install the facebook javascript and contains some javascript functions for publishing data to a facebook feed. Put 
+{{{
+{% show_connect_button %}
+}}} 
+wherever you want a 'Connect with facebook' button.
+
+There is also a management command called 'installfacebooktemplates'. This command loads a file called facebook_templates.py from the base of your project, loads them into facebook as templates for your application, and stores the reference ids in the db. You can get at those templates through the FacebookTemplate class.
 
 ==Using facebook connect==
 Once you've got everything installed, all user objects will magically have a 'facebook_profile' object hanging off them. That is if the user has logged in with facebook. The FacebookProfile object has all sorts of nifty methods and properties.
