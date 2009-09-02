@@ -22,13 +22,13 @@ from django.views.generic.simple import direct_to_template
 from facebookconnect.views import facebook_login,facebook_logout,setup
 
 urlpatterns = patterns('',
-    url(r'^login/?$',
+    url(r'^login/$',
         facebook_login,
         name="facebook_login"),
-    url(r'^logout/?$', 
+    url(r'^logout/$', 
         facebook_logout,
         name="facebook_logout"),
-    url(r'^setup/?$',
+    url(r'^setup/$',
         setup,
         name="facebook_setup"),
     url(r'^xd_receiver.htm$',

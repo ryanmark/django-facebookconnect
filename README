@@ -52,7 +52,7 @@ DUMMY_FACEBOOK_INFO = {
     'uid':0,
     'name':'(Private)',
     'first_name':'(Private)',
-    'pic_square_with_logo':'/public/images/t_silhouette.jpg',
+    'pic_square_with_logo':'http://www.facebook.com/pics/t_silhouette.gif',
     'affiliations':None,
     'status':None,
     'proxied_email':None,
@@ -71,7 +71,7 @@ FACEBOOK_INTERNAL = True
 The third setting is for pyfacebook. I don't know what it does completely. But it does cause pyfacebook to hold on to expired facebook sessions when it's False.
 
 ===caching===
-So you have to use caching with facebook connect. Especially if you plan to display profile info from your facebook connect users. Caching is used no matter what, but if you don't configure it, django will just cache to memory for the execution and not for the long term. Or something. Its probably bad.
+So you have to use caching with facebook connect. Especially if you plan to display profile info from your facebook connect users. Caching is used no matter what, but if you don't configure it, django will just cache to memory for the execution and not for the long term. Or something. It's probably bad.
 
 So read this http://docs.djangoproject.com/en/dev/topics/cache/ and setup database caching or memcached. There is one more setting directive you might be interested in:
 
@@ -87,7 +87,7 @@ Once you've got everything installed, all user objects will magically have a 'fa
 
 There are templates that you can override. The setup screen is presented to a new facebook user when they first log in. A user can then choose to link their facebook account to an existing account or not.
 
-There is a template tag library called facebook which has a bunch of shortcuts for displaying facebook profile information for a user. Put
+There is a template tag library called facebook_tags which has a bunch of shortcuts for displaying facebook profile information for a user. Put
 {{{
 {% load facebook_tags %}
 }}}
@@ -109,13 +109,13 @@ at the bottom of your base.html file before the closing body tag. It will instal
 }}} 
 wherever you want a 'Connect with facebook' button.
 
-There is also a management command called 'installfacebooktemplates'. This command loads a file called facebook_templates.py from the base of your project, loads them into facebook as templates for your application, and stores the reference ids in the db. You can get at those templates through the FacebookTemplate class.
+Django has a builtin LOGIN_REDIRECT_URL setting that django-facebookconnect uses when a user logs in with facebook. By default a user will be redirected to '/accounts/profile'. If you want this to be something different, set LOGIN_REDIRECT_URL in your settings file.
 
 ==Using facebook connect==
-Once you've got everything installed, all user objects will magically have a 'facebook_profile' object hanging off them. That is if the user has logged in with facebook. The FacebookProfile object has all sorts of nifty methods and properties.
+Once you've got everything installed, all user objects will have a 'facebook_profile' object hanging off them. That is if the user has logged in with facebook. The FacebookProfile object has all sorts of nifty methods and properties.
 
 There are templates that you can override. The setup screen is presented to a new facebook user when they first log in. A user can then choose to link their facebook account to an existing account or not.
 
-There is a template tag library called facebook which has a bunch of shortcuts for displaying facebook profile information for a user. Put {% initialize_facebook_connect %} at the bottom of your base.html file. It will install the facebook javascript and contains some javascript functions for publishing data to a facebook feed. Put {% show_connect_button %} wherever you want a 'Connect with facebook' button.
+There is a template tag library called facebook_tags which has a bunch of shortcuts for displaying facebook profile information for a user. Put {% initialize_facebook_connect %} at the bottom of your base.html file. It will install the facebook javascript and contains some javascript functions for publishing data to a facebook feed. Put {% show_connect_button %} wherever you want a 'Connect with facebook' button.
 
-There is also a management command called 'installfacebooktemplates'. This command loads a file called facebook_templates.py from the base of your project, loads them into facebook as templates for your application, and stores the reference ids in the db. You can get at those templates through the FacebookTemplate class.
+There is also a management command called 'installfacebooktemplates'. This command loads special facebook templates from a directive in your settings file called FACEBOOK_TEMPLATES and stores the reference ids in the db. You can get at those templates through the FacebookTemplate class. See the settings.EXAMPLE.py file for more details on how to define facebook templates.
