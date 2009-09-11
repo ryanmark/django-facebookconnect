@@ -1,34 +1,34 @@
-{% extends "base.html" %}
+{% extends "facebook/base.html" %}
 {% load facebook_tags %}
 {% block content %}
-<div class="center-box center-only">
-<div class="box-top">
-	<h1>Login</h1>
-</div>
-<div class="box-middle">
-  <div style="float:left;margin:0 .4em .4em 0">{% show_facebook_photo user %}</div>
+  <h1>Login</h1>
+  <div>{% show_facebook_photo user %}</div>
   <h2>{% show_facebook_greeting user %}</h2>
-  <div class="clear"></div>
-  <p>If you already have an account, enter your username and password below to link your account and all your lists and groups with your facebook account. If you do not already have an account, click Continue with facebook only - you won't have to remember a name and password.</p>
+  <p>If you already have an account, enter your username and password below to link your account with your facebook account. If you do not have an account, you can create one below to be linked with your facebook account or click Connect with facebook only - you won't have to remember a name and password.</p>
   
-  {% if form.errors %}
+  {% if login_form.errors %}
   <p class="error">Your username and password didn't match. Please try again.</p>
   {% endif %}
-        
+   <h4>Link facebook to an existing account:</h4>
   <form action="" method="post" accept-charset="utf-8" class="nice-form">
-    {{ form.as_p }}
+    <input type="hidden" name="login" value="true" id="login">
+    {{ login_form.as_p }}
     <input type="hidden" name="next" value="{{ next }}" id="next">
-    <p><input type="submit" value="Link my accounts"></p>
+    <p><input type="submit" value="Link my accounts and log in"></p>
   </form>
   <hr/>
+   <h4>Link facebook to an new account:</h4>
+  <form action="" method="post" accept-charset="utf-8" class="nice-form">
+    <input type="hidden" name="register" value="true" id="register">
+    {{ registration_form.as_p }}
+    <input type="hidden" name="next" value="{{ next }}" id="next">
+    <p><input type="submit" value="Register and log in"></p>
+  </form>
+  <hr/>
+   <h4>Use facebook only:</h4>
   <form action="" method="post" accept-charset="utf-8" class="nice-form">
     <input type="hidden" name="facebook_only" value="true" id="facebook_only">
     <input type="hidden" name="next" value="{{ next }}" id="next">
     <p><input type="submit" value="Connect with facebook only"></p>
   </form>
-
-	</div>
-	<div class="box-bottom"></div>
-</form>
-</div>
 {% endblock %}
