@@ -24,7 +24,7 @@ from django.template.loader import render_to_string
 from django.contrib.sites.models import Site
 
 from facebook.djangofb import get_facebook_client
-from facebookconnect.models import FacebookTemplate,FacebookProfile
+from facebookconnect.models import FacebookTemplate, FacebookProfile
 
 register = template.Library()
     
@@ -32,94 +32,94 @@ register = template.Library()
 def initialize_facebook_connect():
     return {'facebook_api_key': settings.FACEBOOK_API_KEY}
 
-@register.inclusion_tag('facebook/show_string.html',takes_context=True)
-def show_facebook_name(context,user):
-    if isinstance(user,FacebookProfile):
+@register.inclusion_tag('facebook/show_string.html', takes_context=True)
+def show_facebook_name(context, user):
+    if isinstance(user, FacebookProfile):
         p = user
     else:
         p = user.facebook_profile
-    if getattr(settings,'WIDGET_MODE',None):
+    if getattr(settings, 'WIDGET_MODE', None):
         #if we're rendering widgets, link direct to facebook
         return {'string':u'<fb:name uid="%s" />' % (p.facebook_id)}
     else:
-        return {'string':u'<a href="%s">%s</a>' % (p.get_absolute_url(),p.full_name)}
+        return {'string':u'<a href="%s">%s</a>' % (p.get_absolute_url(), p.full_name)}
 
-@register.inclusion_tag('facebook/show_string.html',takes_context=True)
-def show_facebook_first_name(context,user):
-    if isinstance(user,FacebookProfile):
+@register.inclusion_tag('facebook/show_string.html', takes_context=True)
+def show_facebook_first_name(context, user):
+    if isinstance(user, FacebookProfile):
         p = user
     else:
         p = user.facebook_profile
-    if getattr(settings,'WIDGET_MODE',None):
+    if getattr(settings, 'WIDGET_MODE', None):
         #if we're rendering widgets, link direct to facebook
         return {'string':u'<fb:name uid="%s" firstnameonly="true" />' % (p.facebook_id)}
     else:
-        return {'string':u'<a href="%s">%s</a>' % (p.get_absolute_url(),p.first_name)}
+        return {'string':u'<a href="%s">%s</a>' % (p.get_absolute_url(), p.first_name)}
     
-@register.inclusion_tag('facebook/show_string.html',takes_context=True)
-def show_facebook_possesive(context,user):
-    if isinstance(user,FacebookProfile):
+@register.inclusion_tag('facebook/show_string.html', takes_context=True)
+def show_facebook_possesive(context, user):
+    if isinstance(user, FacebookProfile):
         p = user
     else:
         p = user.facebook_profile
     return {'string':u'<fb:name uid="%i" possessive="true" linked="false"></fb:name>' % p.facebook_id}
 
-@register.inclusion_tag('facebook/show_string.html',takes_context=True)
-def show_facebook_greeting(context,user):
-    if isinstance(user,FacebookProfile):
+@register.inclusion_tag('facebook/show_string.html', takes_context=True)
+def show_facebook_greeting(context, user):
+    if isinstance(user, FacebookProfile):
         p = user
     else:
         p = user.facebook_profile
-    if getattr(settings,'WIDGET_MODE',None):
+    if getattr(settings, 'WIDGET_MODE', None):
         #if we're rendering widgets, link direct to facebook
         return {'string':u'Hello, <fb:name uid="%s" useyou="false" firstnameonly="true" />' % (p.facebook_id)}
     else:
-        return {'string':u'Hello, <a href="%s">%s</a>!' % (p.get_absolute_url(),p.first_name)}
+        return {'string':u'Hello, <a href="%s">%s</a>!' % (p.get_absolute_url(), p.first_name)}
 
-@register.inclusion_tag('facebook/show_string.html',takes_context=True)
-def show_facebook_status(context,user):
-    if isinstance(user,FacebookProfile):
+@register.inclusion_tag('facebook/show_string.html', takes_context=True)
+def show_facebook_status(context, user):
+    if isinstance(user, FacebookProfile):
         p = user
     else:
         p = user.facebook_profile
     return {'string':p.status}
 
-@register.inclusion_tag('facebook/show_string.html',takes_context=True)
-def show_facebook_photo(context,user):
-    if isinstance(user,FacebookProfile):
+@register.inclusion_tag('facebook/show_string.html', takes_context=True)
+def show_facebook_photo(context, user):
+    if isinstance(user, FacebookProfile):
         p = user
     else:
         p = user.facebook_profile
-    if getattr(settings,'WIDGET_MODE',None):
+    if getattr(settings, 'WIDGET_MODE', None):
         #if we're rendering widgets, link direct to facebook
         return {'string':u'<fb:profile_pic uid="%s" facebook-logo="true" />' % (p.facebook_id)}
     else:
         return {'string':u'<a href="%s"><img src="%s" alt="%s"/></a>' % (p.get_absolute_url(), p.pic_square_with_logo, p.name)}
 
-@register.inclusion_tag('facebook/display.html',takes_context=True)
-def show_facebook_info(context,user):
-    if isinstance(user,FacebookProfile):
+@register.inclusion_tag('facebook/display.html', takes_context=True)
+def show_facebook_info(context, user):
+    if isinstance(user, FacebookProfile):
         p = user
     else:
         p = user.facebook_profile
-    return {'profile_url':p.get_absolute_url(), 'picture_url':p.pic_square_with_logo, 'full_name':p.name,'networks':p.networks}
+    return {'profile_url':p.get_absolute_url(), 'picture_url':p.pic_square_with_logo, 'full_name':p.name, 'networks':p.networks}
 
 @register.inclusion_tag('facebook/mosaic.html')
 def show_profile_mosaic(profiles):
     return {'profiles':profiles}
 
-@register.inclusion_tag('facebook/connect_button.html',takes_context=True)
+@register.inclusion_tag('facebook/connect_button.html', takes_context=True)
 def show_connect_button(context):
     if 'next' in context:
         next = context['next']
     else: next = False
     
-    if ( 'user' in context and 
+    if ('user' in context and hasattr(context['user'], 'facebook_profile') and
          context['user'].facebook_profile and
-         context['user'].facebook_profile.is_authenticated() ):
+         context['user'].facebook_profile.is_authenticated()):
         logged_in = True
     else: logged_in = False
-    return {'next':next,'logged_in':logged_in}
+    return {'next':next, 'logged_in':logged_in}
 
 @register.simple_tag
 def facebook_js():
@@ -128,15 +128,15 @@ def facebook_js():
 @register.simple_tag
 def show_logout():
     o = reverse('facebook_logout')
-    return '<a href="%s" onclick="FB.Connect.logoutAndRedirect(\'%s\');return false;">logout</a>' % (o,o) #hoot!
+    return '<a href="%s" onclick="FB.Connect.logoutAndRedirect(\'%s\');return false;">logout</a>' % (o, o) #hoot!
 
 @register.filter()
 def js_string(value):
     import re
-    return re.sub(r'[\r\n]+','',value)
+    return re.sub(r'[\r\n]+', '', value)
 
 @register.inclusion_tag('facebook/invite.html')
-def show_invite_link(invitation_template="facebook/invitation.fbml",show_link=True):
+def show_invite_link(invitation_template="facebook/invitation.fbml", show_link=True):
     """display an invite friends link"""
     fb = get_facebook_client()
     current_site = Site.objects.get_current()
