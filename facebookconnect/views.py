@@ -92,17 +92,17 @@ def facebook_login(request, redirect_url=None,
             HttpResponseRedirect(request.GET.get(REDIRECT_FIELD_NAME,settings.LOGIN_REDIRECT_URL))
 
     # User ain't logged in
-    else:
-        if extra_context is None:
-            extra_context = {}
-        context = RequestContext(request)
-        for key, value in extra_context.items():
-            context[key] = callable(value) and value() or value
-    
-        return render_to_response(
-            template_name,
-            {REDIRECT_FIELD_NAME:request.GET.get(REDIRECT_FIELD_NAMEredirect_url)},
-            context_instance=context)
+    # here we handle extra_context like it is done in django-registration
+    if extra_context is None:
+        extra_context = {}
+    context = RequestContext(request)
+    for key, value in extra_context.items():
+        context[key] = callable(value) and value() or value
+
+    return render_to_response(
+        template_name,
+        {REDIRECT_FIELD_NAME:request.GET.get(REDIRECT_FIELD_NAME, redirect_url)},
+        context_instance=context)
     
     
 def facebook_logout(request, redirect_url=None):
@@ -214,9 +214,9 @@ def setup(request,redirect_url=None,
 
             if login_form.is_valid():
                 user = login_form.get_user()
-                logging.debug("FBC: Trying to setup FB: %s, %s" % (user,profile))
+                logging.debug("FBC: Trying to setup FB: %s, %s" % (user,request.facebook.uid))
                 if user and user.is_active:
-                    FacebookProfile.objects.create(user=user,facebook_id=request.facebook.uid)
+                    FacebookProfile.objects.get_or_create(user=user,facebook_id=request.facebook.uid)
                     logging.info("FBC: Attached facebook profile %s to user %s!" % (profile.facebook_id,user))
                     login(request, user)
                     return HttpResponseRedirect(next)

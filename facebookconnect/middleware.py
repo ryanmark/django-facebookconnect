@@ -70,12 +70,14 @@ class FacebookConnectMiddleware(object):
                 my_ex = exception.exc_info[1]
 
         if type(my_ex) == FacebookError:
+            # we get this error if the facebook session is timed out
+            # we should log out the user and send them to somewhere useful
             if my_ex.code is 102:
                 logout(request)
                 request.facebook.session_key = None
                 request.facebook.uid = None
                 logging.error('FBC middleware: 102, session')
-                return HttpResponseRedirect(reverse('authentication.views.facebook_login'))
+                return HttpResponseRedirect(reverse('facebookconnect.views.facebook_login'))
         elif type(my_ex) == URLError:
             if my_ex.reason is 104:
                 logging.error('FBC middleware: 104, connection reset?')
