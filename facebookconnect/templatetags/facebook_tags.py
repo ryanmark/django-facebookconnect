@@ -22,6 +22,7 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.template.loader import render_to_string
 from django.contrib.sites.models import Site
+from django.contrib.auth import REDIRECT_FIELD_NAME
 
 from facebook.djangofb import get_facebook_client
 from facebookconnect.models import FacebookTemplate, FacebookProfile
@@ -94,7 +95,7 @@ def show_facebook_photo(context, user):
         #if we're rendering widgets, link direct to facebook
         return {'string':u'<fb:profile_pic uid="%s" facebook-logo="true" />' % (p.facebook_id)}
     else:
-        return {'string':u'<a href="%s"><img src="%s" alt="%s"/></a>' % (p.get_absolute_url(), p.pic_square_with_logo, p.name)}
+        return {'string':u'<a href="%s"><img src="%s" alt="%s"/></a>' % (p.get_absolute_url(), p.picture_url, p.full_name)}
 
 @register.inclusion_tag('facebook/display.html', takes_context=True)
 def show_facebook_info(context, user):
@@ -102,7 +103,7 @@ def show_facebook_info(context, user):
         p = user
     else:
         p = user.facebook_profile
-    return {'profile_url':p.get_absolute_url(), 'picture_url':p.pic_square_with_logo, 'full_name':p.name, 'networks':p.networks}
+    return {'profile_url':p.get_absolute_url(), 'picture_url':p.picture_url, 'full_name':p.full_name, 'networks':p.networks}
 
 @register.inclusion_tag('facebook/mosaic.html')
 def show_profile_mosaic(profiles):
@@ -110,16 +111,16 @@ def show_profile_mosaic(profiles):
 
 @register.inclusion_tag('facebook/connect_button.html', takes_context=True)
 def show_connect_button(context):
-    if 'next' in context:
-        next = context['next']
-    else: next = False
+    if REDIRECT_FIELD_NAME in context:
+        redirect_url = context[REDIRECT_FIELD_NAME]
+    else: redirect_url = False
     
     if ('user' in context and hasattr(context['user'], 'facebook_profile') and
          context['user'].facebook_profile and
          context['user'].facebook_profile.is_authenticated()):
         logged_in = True
     else: logged_in = False
-    return {'next':next, 'logged_in':logged_in}
+    return {REDIRECT_FIELD_NAME:redirect_url, 'logged_in':logged_in}
 
 @register.simple_tag
 def facebook_js():

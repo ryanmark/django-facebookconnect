@@ -13,7 +13,9 @@
   <form action="" method="post" accept-charset="utf-8" class="nice-form">
     <input type="hidden" name="login" value="true" id="login">
     {{ login_form.as_p }}
-    <input type="hidden" name="next" value="{{ next }}" id="next">
+    {% if next %}
+    <input type="hidden" name="next" value="{{ next }}" id="next">        
+    {% endif %}
     <p><input type="submit" value="Link my accounts and log in"></p>
   </form>
   <hr/>
@@ -21,14 +23,18 @@
   <form action="" method="post" accept-charset="utf-8" class="nice-form">
     <input type="hidden" name="register" value="true" id="register">
     {{ registration_form.as_p }}
-    <input type="hidden" name="next" value="{{ next }}" id="next">
+    {% if next %}
+    <input type="hidden" name="next" value="{{ next }}" id="next">        
+    {% endif %}
     <p><input type="submit" value="Register and log in"></p>
   </form>
   <hr/>
    <h4>Use facebook only:</h4>
   <form action="" method="post" accept-charset="utf-8" class="nice-form">
     <input type="hidden" name="facebook_only" value="true" id="facebook_only">
-    <input type="hidden" name="next" value="{{ next }}" id="next">
+    {% if next %}
+    <input type="hidden" name="next" value="{{ next }}" id="next">        
+    {% endif %}
     <p><input type="submit" value="Connect with facebook only"></p>
   </form>
 {% endblock %}

@@ -68,7 +68,7 @@ if len(sys.argv) > 1 and sys.argv[1] == 'bdist_wininst':
 
 setup(
     name = "Django-FacebookConnect",
-    version = "0.1",
+    version = "0.2",
     description='Django app impliments facebook connect. Requires pyfacebook.',
     author='Ryan Mark',
     author_email='ryan@mrk.cc',
