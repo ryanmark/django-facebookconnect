@@ -88,6 +88,7 @@ class FacebookProfile(models.Model):
     facebook_id = BigIntegerField(unique=True)
     
     __facebook_info = None
+    dummy = True
 
     FACEBOOK_FIELDS = ['uid,name,first_name,last_name,pic_square_with_logo,affiliations,status,proxied_email']
     DUMMY_FACEBOOK_INFO = {
@@ -114,8 +115,9 @@ class FacebookProfile(models.Model):
             pass
         
         if hasattr(_thread_locals,'fbids'):
-            if self.facebook_id not in _thread_locals.fbids:
-                _thread_locals.fbids.append(self.facebook_id)
+            if ( self.facebook_id 
+                    and self.facebook_id not in _thread_locals.fbids ):
+                _thread_locals.fbids.append(str(self.facebook_id))
         else: _thread_locals.fbids = [self.facebook_id]
             
     def __get_picture_url(self):
@@ -219,13 +221,13 @@ class FacebookProfile(models.Model):
         if fb_info_cache:
             friends = fb_info_cache
         else:
-            if getattr(settings,'RANDOM_FACEBOOK_FAIL',False) and random.randint(1,10) is 8:
-                raise FacebookError(102,"RANDOM FACEBOOK FAIL!!!",[])
-            elif getattr(settings,'RANDOM_FACEBOOK_FAIL',False) and random.randint(1,10) is 3:
-                raise URLError(104)
             log.debug("Calling for '%s'" % cache_key)
             friends = _facebook_obj.friends.getAppUsers()
-            cache.set(cache_key,friends,getattr(settings,'FACEBOOK_CACHE_TIMEOUT',1800))
+            cache.set(
+                cache_key, 
+                friends, 
+                getattr(settings,'FACEBOOK_CACHE_TIMEOUT',1800)
+            )
         
         return friends        
 
@@ -236,16 +238,16 @@ class FacebookProfile(models.Model):
         """
         _facebook_obj = get_facebook_client()
         all_info = []
-        my_info = self.DUMMY_FACEBOOK_INFO
+        my_info = None
         ids_to_get = []
         for id in fbids:
-            if id is 0:
-                ret.append(self.DUMMY_FACEBOOK_INFO)
+            if id == 0 or id is None:
+                continue
             
             if _facebook_obj.uid is None:
                 cache_key = 'fb_user_info_%s' % id
             else:
-                cache_key = 'fb_user_info_%s_%s' % (_facebook_obj.uid,id)
+                cache_key = 'fb_user_info_%s_%s' % (_facebook_obj.uid, id)
         
             fb_info_cache = cache.get(cache_key)
             if fb_info_cache:
@@ -256,12 +258,11 @@ class FacebookProfile(models.Model):
                 ids_to_get.append(id)
         
         if len(ids_to_get) > 0:
-            if getattr(settings,'RANDOM_FACEBOOK_FAIL',False) and random.randint(1,10) is 8:
-                raise FacebookError(102,"RANDOM FACEBOOK FAIL!!!",[])
-            elif getattr(settings,'RANDOM_FACEBOOK_FAIL',False) and random.randint(1,10) is 3:
-                raise URLError(104)
             log.debug("Calling for '%s'" % ids_to_get)
-            tmp_info = _facebook_obj.users.getInfo(ids_to_get, self.FACEBOOK_FIELDS)
+            tmp_info = _facebook_obj.users.getInfo(
+                            ids_to_get, 
+                            self.FACEBOOK_FIELDS
+                        )
             
             all_info.extend(tmp_info)
             for info in tmp_info:
@@ -273,26 +274,38 @@ class FacebookProfile(models.Model):
                 else:
                     cache_key = 'fb_user_info_%s_%s' % (_facebook_obj.uid,info['uid'])
 
-                cache.set(cache_key,info,getattr(settings,'FACEBOOK_CACHE_TIMEOUT',1800))
+                cache.set(
+                    cache_key, 
+                    info, 
+                    getattr(settings, 'FACEBOOK_CACHE_TIMEOUT', 1800)
+                )
                 
-        return all_info,my_info
+        return all_info, my_info
 
     def __configure_me(self):
         """Calls facebook to populate profile info"""
         try:
-            log.debug("FBID: '%s' profile: '%s' user: '%s'" % (self.facebook_id,self.id,self.user_id))
-            if self.__facebook_info == self.DUMMY_FACEBOOK_INFO or not self.__facebook_info:
-                ids = getattr(_thread_locals,'fbids',[self.facebook_id])
-                all_info,self.__facebook_info = self.__get_facebook_info(ids)
-        except (ImproperlyConfigured), ex:
+            log.debug("FBID: '%s' profile: '%s' user: '%s'" % 
+                                    (self.facebook_id, self.id, self.user_id))
+            if ( self.__facebook_info == self.DUMMY_FACEBOOK_INFO 
+                                                or not self.__facebook_info ):
+                ids = getattr(_thread_locals, 'fbids', [self.facebook_id])
+                all_info, my_info = self.__get_facebook_info(ids)
+                if my_info:
+                    self.__facebook_info = my_info
+                    self.dummy = False
+                    return True
+        except ImproperlyConfigured, ex:
             log.error('Facebook not setup')
             self.__facebook_info = self.DUMMY_FACEBOOK_INFO
         except (FacebookError,URLError), ex:
             log.error('Fail loading profile: %s' % ex)
             self.__facebook_info = self.DUMMY_FACEBOOK_INFO
-        except (IndexError), ex:
+        except IndexError, ex:
             log.error("Couldn't retrieve FB info for FBID: '%s' profile: '%s' user: '%s'" % (self.facebook_id,self.id,self.user_id))
             self.__facebook_info = self.DUMMY_FACEBOOK_INFO
+        
+        return False
 
     def get_absolute_url(self):
         return "http://www.facebook.com/profile.php?id=%s" % self.facebook_id

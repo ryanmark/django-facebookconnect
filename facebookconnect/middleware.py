@@ -30,13 +30,25 @@ from django.http import HttpResponseRedirect,HttpResponse
 from urllib2 import URLError
 from facebookconnect.models import FacebookProfile
 
+try:
+    from threading import local
+except ImportError:
+    from django.utils._threading_local import local
+
+_thread_locals = local()
+
 class FacebookConnectMiddleware(object):
     """Middlware to provide a working facebook object"""
     def process_request(self,request):
         """process incoming request"""
+        
+        # clear out the storage of fb ids in the local thread
+        if hasattr(_thread_locals,'fbids'):
+            del _thread_locals.fbids
+        
         try:
-            # this is true if anyone has ever used the browser to log in to facebook with an acount
-            # that has accepted this application. useless.
+            # This is true if anyone has ever used the browser to log in to
+            # facebook with an acount that has accepted this application.
             bona_fide = request.facebook.check_session(request)
             uid = request.facebook.uid
             log.debug("Bona Fide: %s, Logged in: %s" % (bona_fide, uid))
