@@ -121,45 +121,41 @@ class FacebookProfile(models.Model):
         else: _thread_locals.fbids = [self.facebook_id]
             
     def __get_picture_url(self):
-        self.__configure_me()
-        if self.__facebook_info['pic_square_with_logo']:
+        if self.__configure_me() and self.__facebook_info['pic_square_with_logo']:
             return self.__facebook_info['pic_square_with_logo']
         else:
             return self.DUMMY_FACEBOOK_INFO['pic_square_with_logo']
     picture_url = property(__get_picture_url)
     
     def __get_full_name(self):
-        self.__configure_me()
-        if self.__facebook_info['name']:
+        if self.__configure_me() and self.__facebook_info['name']:
             return u"%s" % self.__facebook_info['name']
         else:
             return self.DUMMY_FACEBOOK_INFO['name']
     full_name = property(__get_full_name)
     
     def __get_first_name(self):
-        self.__configure_me()
-        if self.__facebook_info['first_name']:
+        if self.__configure_me() and self.__facebook_info['first_name']:
             return u"%s" % self.__facebook_info['first_name']
         else:
             return self.DUMMY_FACEBOOK_INFO['first_name']
     first_name = property(__get_first_name)
     
     def __get_last_name(self):
-        self.__configure_me()
-        if self.__facebook_info['last_name']:
+        if self.__configure_me() and self.__facebook_info['last_name']:
             return u"%s" % self.__facebook_info['last_name']
         else:
             return self.DUMMY_FACEBOOK_INFO['last_name']
     last_name = property(__get_last_name)
     
     def __get_networks(self):
-        self.__configure_me()
-        return self.__facebook_info['affiliations']
+        if self.__configure_me():
+            return self.__facebook_info['affiliations']
+        else: return []
     networks = property(__get_networks)
 
     def __get_email(self):
-        self.__configure_me()
-        if self.__facebook_info['proxied_email']:
+        if self.__configure_me() and self.__facebook_info['proxied_email']:
             return self.__facebook_info['proxied_email']
         else:
             return ""
@@ -234,31 +230,33 @@ class FacebookProfile(models.Model):
     def __get_facebook_info(self,fbids):
         """
            Takes an array of facebook ids and caches all the info that comes
-           back.Returns a tuple - an array of all facebook info, and info for self's fb id.
+           back. Returns a tuple - an array of all facebook info, and info for
+           self's fb id.
         """
         _facebook_obj = get_facebook_client()
         all_info = []
         my_info = None
         ids_to_get = []
-        for id in fbids:
-            if id == 0 or id is None:
+        for fbid in fbids:
+            if fbid == 0 or fbid is None:
                 continue
             
             if _facebook_obj.uid is None:
-                cache_key = 'fb_user_info_%s' % id
+                cache_key = 'fb_user_info_%s' % fbid
             else:
-                cache_key = 'fb_user_info_%s_%s' % (_facebook_obj.uid, id)
+                cache_key = 'fb_user_info_%s_%s' % (_facebook_obj.uid, fbid)
         
             fb_info_cache = cache.get(cache_key)
             if fb_info_cache:
+                log.debug("Found %s in cache" % fbid)
                 all_info.append(fb_info_cache)
-                if id == self.facebook_id:
+                if fbid == self.facebook_id:
                     my_info = fb_info_cache
             else:
-                ids_to_get.append(id)
+                ids_to_get.append(fbid)
         
         if len(ids_to_get) > 0:
-            log.debug("Calling for '%s'" % ids_to_get)
+            log.debug("Calling for %s" % ids_to_get)
             tmp_info = _facebook_obj.users.getInfo(
                             ids_to_get, 
                             self.FACEBOOK_FIELDS
@@ -270,7 +268,7 @@ class FacebookProfile(models.Model):
                     my_info = info
                 
                 if _facebook_obj.uid is None:
-                    cache_key = 'fb_user_info_%s' % id
+                    cache_key = 'fb_user_info_%s' % fbid
                 else:
                     cache_key = 'fb_user_info_%s_%s' % (_facebook_obj.uid,info['uid'])
 
@@ -285,25 +283,22 @@ class FacebookProfile(models.Model):
     def __configure_me(self):
         """Calls facebook to populate profile info"""
         try:
-            log.debug("FBID: '%s' profile: '%s' user: '%s'" % 
-                                    (self.facebook_id, self.id, self.user_id))
-            if ( self.__facebook_info == self.DUMMY_FACEBOOK_INFO 
-                                                or not self.__facebook_info ):
+            log.debug( "Configure fb profile %s" % self.facebook_id )
+            if self.dummy or self.__facebook_info is None:
                 ids = getattr(_thread_locals, 'fbids', [self.facebook_id])
                 all_info, my_info = self.__get_facebook_info(ids)
                 if my_info:
                     self.__facebook_info = my_info
                     self.dummy = False
                     return True
+            else:
+                return True
         except ImproperlyConfigured, ex:
             log.error('Facebook not setup')
-            self.__facebook_info = self.DUMMY_FACEBOOK_INFO
         except (FacebookError,URLError), ex:
             log.error('Fail loading profile: %s' % ex)
-            self.__facebook_info = self.DUMMY_FACEBOOK_INFO
-        except IndexError, ex:
-            log.error("Couldn't retrieve FB info for FBID: '%s' profile: '%s' user: '%s'" % (self.facebook_id,self.id,self.user_id))
-            self.__facebook_info = self.DUMMY_FACEBOOK_INFO
+        # except IndexError, ex:
+        #     log.error("Couldn't retrieve FB info for FBID: '%s' profile: '%s' user: '%s'" % (self.facebook_id, self.id, self.user_id))
         
         return False
 

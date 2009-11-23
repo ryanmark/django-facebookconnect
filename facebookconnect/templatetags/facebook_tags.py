@@ -98,7 +98,7 @@ def show_facebook_photo(context, user):
         #if we're rendering widgets, link direct to facebook
         return {'string':u'<fb:profile_pic uid="%s" facebook-logo="true" />' % (p.facebook_id)}
     else:
-        return {'string':u'<a href="%s"><img src="%s" alt="%s"/></a>' % (p.get_absolute_url(), p.picture_url, p.full_name)}
+        return {'string':u'<a href="%s"><img src="%s" alt="%s"/></a>' % (url, pic_url, name)}
 
 @register.inclusion_tag('facebook/display.html', takes_context=True)
 def show_facebook_info(context, user):

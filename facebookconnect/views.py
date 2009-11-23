@@ -23,7 +23,7 @@ log = logging.getLogger('facebookconnect.views')
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.template import RequestContext
 from django.core.urlresolvers import reverse
-from django.shortcuts import render_to_response
+from django.shortcuts import render_to_response, redirect
 from django.contrib.auth import authenticate, login, logout, REDIRECT_FIELD_NAME
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User
@@ -182,9 +182,19 @@ def setup(request,redirect_url=None,
     elif redirect_url is None:
         redirect_url = getattr(settings, "LOGIN_REDIRECT_URL", "/")
 
+    #check that this fb user is not already in the system
+    try:
+        FacebookProfile.objects.get(facebook_id=request.facebook.uid)
+        # already setup, move along please
+        return redirect(redirect_url)
+    except FacebookProfile.DoesNotExist, e:
+        # not in the db, ok to continue
+        pass
+
     #user submitted a form - which one?
     if request.method == "POST":
-        #lets setup a facebook only account. The user will have to use facebook to login.
+        #lets setup a facebook only account. The user will have to use
+        #facebook to login.
         if request.POST.get('facebook_only',False):
             profile = FacebookProfile(facebook_id=request.facebook.uid)
             user = User(username=request.facebook.uid,
@@ -208,7 +218,8 @@ def setup(request,redirect_url=None,
             if profile.last_name != "(Private)":
                 lname = profile.last_name
             user = User(first_name=fname, last_name=lname)
-            registration_form = registration_form_class(data=request.POST, instance=user)
+            registration_form = registration_form_class(
+                                        data=request.POST, instance=user)
             if registration_form.is_valid():
                 user = registration_form.save()
                 profile.user = user
