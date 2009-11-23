@@ -91,9 +91,12 @@ def show_facebook_photo(context, user):
         p = user
     else:
         p = user.facebook_profile
-    url = p.get_absolute_url() if p.get_absolute_url() else ""
-    pic_url = p.picture_url if p.picture_url else ""
-    name = p.full_name if p.full_name else ""
+    if p.get_absolute_url(): url = p.get_absolute_url()
+    else: url = ""
+    if p.picture_url: pic_url = p.picture_url
+    else: pic_url = ""
+    if p.full_name: name = p.full_name
+    else: name = ""
     if getattr(settings, 'WIDGET_MODE', None):
         #if we're rendering widgets, link direct to facebook
         return {'string':u'<fb:profile_pic uid="%s" facebook-logo="true" />' % (p.facebook_id)}
