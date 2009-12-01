@@ -187,7 +187,7 @@ def setup(request,redirect_url=None,
     try:
         FacebookProfile.objects.get(facebook_id=request.facebook.uid)
         # already setup, move along please
-        return redirect(redirect_url)
+        return HttpResponseRedirect(redirect_url)
     except FacebookProfile.DoesNotExist, e:
         # not in the db, ok to continue
         pass
