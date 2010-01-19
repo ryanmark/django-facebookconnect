@@ -41,18 +41,19 @@ class FacebookConnectMiddleware(object):
     """Middlware to provide a working facebook object"""
     def process_request(self,request):
         """process incoming request"""
-        
+
         # clear out the storage of fb ids in the local thread
         if hasattr(_thread_locals,'fbids'):
             del _thread_locals.fbids
-        
+
         try:
             # This is true if anyone has ever used the browser to log in to
             # facebook with an acount that has accepted this application.
             bona_fide = request.facebook.check_session(request)
             uid = request.facebook.uid
-            log.debug("Bona Fide: %s, Logged in: %s" % (bona_fide, uid))
-            
+            if not request.path.startswith(settings.MEDIA_URL):
+              log.debug("Bona Fide: %s, Logged in: %s" % (bona_fide, uid))
+
             if bona_fide and uid:
                 user = request.user
                 if user.is_anonymous():
@@ -68,7 +69,7 @@ class FacebookConnectMiddleware(object):
                 if user.is_authenticated() and bona_fide:
                     try:
                         fbp = FacebookProfile.objects.get(user=user)
-                    
+
                         if fbp.facebook_only():
                             cur_user = request.facebook.users.getLoggedInUser()
                             if int(cur_user) != int(request.facebook.uid):
@@ -78,17 +79,17 @@ class FacebookConnectMiddleware(object):
                     except FacebookProfile.DoesNotExsist, ex:
                         # user doesnt have facebook :(
                         pass
-            
+
         except Exception, ex:
-            # Because this is a middleware, we can't assume the errors will 
+            # Because this is a middleware, we can't assume the errors will
             # be caught anywhere useful.
             logout(request)
             request.facebook.session_key = None
             request.facebook.uid = None
             log.exception(ex)
-    
+
         return None
-    
+
     def process_exception(self,request,exception):
         my_ex = exception
         if type(exception) == TemplateSyntaxError:
