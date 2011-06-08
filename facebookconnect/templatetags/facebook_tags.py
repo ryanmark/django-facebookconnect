@@ -24,11 +24,10 @@ from django.template.loader import render_to_string
 from django.contrib.sites.models import Site
 from django.contrib.auth import REDIRECT_FIELD_NAME
 
-from facebook.djangofb import get_facebook_client
 from facebookconnect.models import FacebookTemplate, FacebookProfile
 
 register = template.Library()
-    
+
 @register.inclusion_tag('facebook/js.html')
 def initialize_facebook_connect():
     return {'facebook_api_key': settings.FACEBOOK_API_KEY}
@@ -145,30 +144,37 @@ def js_string(value):
 @register.inclusion_tag('facebook/invite.html')
 def show_invite_link(invitation_template="facebook/invitation.fbml", show_link=True):
     """display an invite friends link"""
-    fb = get_facebook_client()
+    # fb = get_facebook_client()
     current_site = Site.objects.get_current()
     
-    content = render_to_string(invitation_template,
-                               { 'inviter': fb.uid,
-                                 'url': fb.get_add_url(),
-                                 'site': current_site })
+    # content = render_to_string(invitation_template,
+    #                            { 'inviter': fb.uid,
+    #                              'url': fb.get_add_url(),
+    #                              'site': current_site })
     
-    from cgi import escape 
-    content = escape(content, True) 
+    # from cgi import escape 
+    # content = escape(content, True) 
 
-    facebook_uid = fb.uid
-    fql = "SELECT uid FROM user WHERE uid IN (SELECT uid2 FROM friend WHERE uid1='%s') AND has_added_app = 1" % fb.uid
-    result = fb.fql.query(fql)
-    # Extract the user ID's returned in the FQL request into a new array.
-    if result and isinstance(result, list):
-        friends_list = map(lambda x: str(x['uid']), result)
-    else: friends_list = []
-    # Convert the array of friends into a comma-delimeted string.
-    exclude_ids = ','.join(friends_list) 
+    # facebook_uid = fb.uid
+    # fql = "SELECT uid FROM user WHERE uid IN (SELECT uid2 FROM friend WHERE uid1='%s') AND has_added_app = 1" % fb.uid
+    # result = fb.fql.query(fql)
+    # # Extract the user ID's returned in the FQL request into a new array.
+    # if result and isinstance(result, list):
+    #     friends_list = map(lambda x: str(x['uid']), result)
+    # else: friends_list = []
+    # # Convert the array of friends into a comma-delimeted string.
+    # exclude_ids = ','.join(friends_list) 
     
+    # return {
+    #     'exclude_ids':exclude_ids,
+    #     'content':content,
+    #     'action_url':'',
+    #     'site':current_site,
+    #     'show_link':show_link,
+    # }
     return {
-        'exclude_ids':exclude_ids,
-        'content':content,
+        'exclude_ids':[],
+        'content':'',
         'action_url':'',
         'site':current_site,
         'show_link':show_link,

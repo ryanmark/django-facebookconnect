@@ -21,19 +21,16 @@ from django.conf.urls.defaults import *
 from django.views.generic.simple import direct_to_template
 from facebookconnect.views import facebook_login,facebook_logout,setup
 
-urlpatterns = patterns('',
+urlpatterns = patterns('facebookconnect',
     url(r'^login/$',
-        facebook_login,
+        'views.facebook_login',
         name="facebook_login"),
     url(r'^logout/$', 
-        facebook_logout,
+        'views.facebook_logout',
         name="facebook_logout"),
     url(r'^setup/$',
-        setup,
+        'views.setup',
         name="facebook_setup"),
-    url(r'^xd_receiver.htm$',
-        direct_to_template,
-        {'template': 'facebook/xd_receiver.htm'},
-        name="facebook_xd_receiver"),
+	url(r'^auth/$', 'views.fb_auth', name='fb_auth'),
 )
 

@@ -1,13 +1,2 @@
-{% load facebook_tags %}{% filter js_string %}
-<form class="connect-button" name="facebookconnect-login-form" id="facebookconnect-login-form" method="post" action="{% url facebook_login %}">
-    {% if next %}
-        <input type="hidden" name="next" value="{{ next }}" />
-    {% endif %}
-    
-    {% if not logged_in %}
-        <input type="image" onclick="facebookConnect(this.form);return false;" src="http://static.ak.fbcdn.net/images/fbconnect/login-buttons/connect_light_large_long.gif" />
-    {% else %}
-        <a href="{% url facebook_logout %}" onclick="FB.Connect.logoutAndRedirect('{% url facebook_logout %}');return false;">Logout</a>            
-    {% endif %}
-</form>
-{% endfilter %}
+{% load facebook_tags %}
+<a href="{% url fb_auth %}">Sign in with facebook</a>
