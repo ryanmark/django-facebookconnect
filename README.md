@@ -1,3 +1,8 @@
+WARNING: THIS THING IS OLD - DON'T USE IT
+
+This thing uses an old hacky way of doing authentication that Facebook has deprecated. Do yourself a favor and use OAUTH and Facebook's Open Graph API. It's sooooo much better.
+
+
 django-facebookconnect
 ======================
 
