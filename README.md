@@ -1,4 +1,6 @@
-WARNING: THIS THING IS OLD - DON'T USE IT
+WARNING: THIS THING IS OBSOLETE - DON'T USE IT
+
+Use this one instead: http://github.com/ryanmark/django_facebook_oauth
 
 This thing uses an old hacky way of doing authentication that Facebook has deprecated. Do yourself a favor and use OAUTH and Facebook's Open Graph API. It's sooooo much better.
 
